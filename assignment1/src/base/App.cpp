@@ -129,8 +129,8 @@ vector<Vertex> loadUserGeneratedModel() {
 	for(auto i = 0u; i < faces; ++i)	{
 		// YOUR CODE HERE (R2)
 		v0.position = Vec3f(0, 0, 0);
-		v1.position = Vec3f(FW::sin(i * angle_increment) * radius, -height, -FW::cos(i * angle_increment) * radius);
-		v2.position = Vec3f(FW::sin((i + 1) * angle_increment) * radius, -height, -FW::cos((i + 1) * angle_increment) * radius);
+		v1.position = Vec3f(FW::sin(i * angle_increment) * radius, -height, FW::cos(i * angle_increment) * radius);
+		v2.position = Vec3f(FW::sin((i + 1) * angle_increment) * radius, -height, FW::cos((i + 1) * angle_increment) * radius);
 
 		// Calculate the normal of the face from the positions and use it for all vertices.
 		v0.normal = v1.normal = v2.normal = (v1.position - v0.position).cross(v2.position - v1.position).normalized();
@@ -317,6 +317,7 @@ void App::initRendering() {
 		
 		out vec4 vColor;
 		
+		uniform mat4 uNormalTransform;
 		uniform mat4 uModelToWorld;
 		uniform mat4 uWorldToClip;
 		uniform float uShading;
@@ -328,8 +329,9 @@ void App::initRendering() {
 		
 		void main()
 		{
-			// EXTRA: oops, someone forgot to transform normals here...
-			float clampedCosine = clamp(dot(aNormal, directionToLight), 0.0, 1.0);
+			// EXTRA: oops, someone forgot to transform normals here;
+			vec3 normalTransformed = mat3(uNormalTransform) * aNormal;
+			float clampedCosine = clamp(dot(normalTransformed, directionToLight), 0.0, 1.0);
 			vec3 litColor = vec3(clampedCosine);
 			vec3 generatedColor = distinctColors[gl_VertexID % 6];
 			// gl_Position is a built-in output variable that marks the final position
@@ -354,6 +356,7 @@ void App::initRendering() {
 	gl_.shader_program = shader_program->getHandle();
 	gl_.world_to_clip_uniform = glGetUniformLocation(gl_.shader_program, "uWorldToClip");
 	gl_.model_to_world_uniform = glGetUniformLocation(gl_.shader_program, "uModelToWorld");
+	gl_.normal_transform_uniform = glGetUniformLocation(gl_.shader_program, "uNormalTransform");
 	gl_.shading_toggle_uniform = glGetUniformLocation(gl_.shader_program, "uShading");
 }
 
@@ -411,8 +414,9 @@ void App::render() {
 	Mat4f translation = Mat4f().translate(translation_);
 	//Rotation along the y-axis
 	Mat4f modelToWorld = translation * rotation * scale;
-	
+	Mat4f normalTransform = transpose(invert(modelToWorld));
 	// Draw the model with your model-to-world transformation.
+	glUniformMatrix4fv(gl_.normal_transform_uniform, 1, GL_FALSE, normalTransform.getPtr());
 	glUniformMatrix4fv(gl_.model_to_world_uniform, 1, GL_FALSE, modelToWorld.getPtr());
 	glBindVertexArray(gl_.dynamic_vao);
 	glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
