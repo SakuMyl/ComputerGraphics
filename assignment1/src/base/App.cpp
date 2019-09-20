@@ -147,7 +147,10 @@ App::App(void)
 	model_changed_			(true),
 	shading_toggle_			(false),
 	shading_mode_changed_	(false),
-	camera_rotation_angle_	(0.0f),
+	cam_rot_around_y_	 	(0.0f),
+	cam_rot_around_x_		(0.0f),
+	mouseDragging_			(false),
+	lastMousePos_			(Vec2i(0, 0)),
 	translation_			(Vec3f(0, 0, 0)),
 	object_y_rotation_      (0.0f),
 	object_x_scale_			(1.0f)
@@ -219,11 +222,7 @@ bool App::handleEvent(const Window::Event& ev) {
 		// Look in framework/gui/Keys.hpp for more key codes.
 		// Visual Studio tip: you can right-click an identifier like FW_KEY_HOME
 		// and "Go to definition" to jump directly to where the identifier is defined.
-		if (ev.key == FW_KEY_HOME)
-			camera_rotation_angle_ -= 0.05 * FW_PI;
-		else if (ev.key == FW_KEY_END)
-			camera_rotation_angle_ += 0.05 * FW_PI;
-		else if (ev.key == FW_KEY_DOWN)
+		if (ev.key == FW_KEY_DOWN)
 			translation_.y -= 0.05;
 		else if (ev.key == FW_KEY_UP)
 			translation_.y += 0.05;
@@ -243,13 +242,27 @@ bool App::handleEvent(const Window::Event& ev) {
 			object_x_scale_ += 0.05;
 		else if (ev.key == FW_KEY_S)
 			object_x_scale_ -= 0.05;
+		else if (ev.key == FW_KEY_MOUSE_LEFT) {
+			mouseDragging_ = true;
+			lastMousePos_ = ev.mousePos;
+		}
 	}
 	
 	if (ev.type == Window::EventType_KeyUp) {
+		if (ev.key == FW_KEY_MOUSE_LEFT)
+			mouseDragging_ = false;
 	}
 
 	if (ev.type == Window::EventType_Mouse) {
 		// EXTRA: you can put your mouse controls here.
+		if (ev.mouseDragging) {
+			Vec2i newMousePos = ev.mousePos;
+			Vec2i posChange = newMousePos - lastMousePos_;
+			float newXRot = cam_rot_around_x_ + posChange.y * 0.005;
+			cam_rot_around_x_ = std::min(std::max(newXRot, -FW_PI / 2), FW_PI / 2);
+			cam_rot_around_y_ += posChange.x * 0.005;
+			lastMousePos_ = newMousePos;
+		}
 		// Event::mouseDelta gives the distance the mouse has moved.
 		// Event::mouseDragging tells whether some mouse buttons are currently down.
 		// If you want to know which ones, you have to keep track of the button down/up events
@@ -331,7 +344,7 @@ void App::initRendering() {
 		{
 			// EXTRA: oops, someone forgot to transform normals here;
 			vec3 normalTransformed = mat3(uNormalTransform) * aNormal;
-			float clampedCosine = clamp(dot(normalTransformed, directionToLight), 0.0, 1.0);
+			float clampedCosine = clamp(dot(normalize(normalTransformed), directionToLight), 0.0, 1.0);
 			vec3 litColor = vec3(clampedCosine);
 			vec3 generatedColor = distinctColors[gl_VertexID % 6];
 			// gl_Position is a built-in output variable that marks the final position
@@ -375,11 +388,17 @@ void App::render() {
 	// Our camera is aimed at origin, and orbits around origin at fixed distance.
 	static const float camera_distance = 2.1f;	
 	Mat4f C;
-	Mat3f rot = Mat3f::rotation(Vec3f(0, 1, 0), -camera_rotation_angle_);
+	Mat3f yRot = Mat3f::rotation(Vec3f(0, 1, 0), -cam_rot_around_y_);
+	Mat3f xRot = Mat3f::rotation(Vec3f(1, 0, 0), -cam_rot_around_x_);
+	Mat3f rot = xRot * yRot;
 	C.setCol(0, Vec4f(rot.getCol(0), 0));
 	C.setCol(1, Vec4f(rot.getCol(1), 0));
 	C.setCol(2, Vec4f(rot.getCol(2), 0));
 	C.setCol(3, Vec4f(0, 0, camera_distance, 1));
+
+	//Rotate the camera around the object
+	Mat4f translateCamera = Mat4f();
+	translateCamera.setCol(3, Vec4f(translation_.x, translation_.y, translation_.z, 1));
 	
 	// Simple perspective.
 	static const float fnear = 0.1f, ffar = 4.0f;
@@ -389,7 +408,7 @@ void App::render() {
 	P.setCol(2, Vec4f(0, 0, (ffar+fnear)/(ffar-fnear), 1));
 	P.setCol(3, Vec4f(0, 0, -2*ffar*fnear/(ffar-fnear), 0));
 
-	Mat4f world_to_clip = P * C;
+	Mat4f world_to_clip = P * C * invert(translateCamera);
 	
 	// Set active shader program.
 	glUseProgram(gl_.shader_program);
@@ -404,6 +423,9 @@ void App::render() {
 	
 	// YOUR CODE HERE (R1)
 	// Set the model space -> world space transform to translate the model according to user input.
+	
+	Mat4f translation = Mat4f().translate(translation_);
+
 	Mat4f rotation = Mat4f();
 	rotation.setRow(0, Vec4f(FW::cos(object_y_rotation_), 0, FW::sin(object_y_rotation_), 0));
 	rotation.setRow(1, Vec4f(0, 1, 0, 0));
@@ -411,8 +433,6 @@ void App::render() {
 	rotation.setRow(3, Vec4f(0, 0, 0, 1));
 
 	Mat4f scale = Mat4f().scale(Vec3f(object_x_scale_, 1, 1));
-	Mat4f translation = Mat4f().translate(translation_);
-	//Rotation along the y-axis
 	Mat4f modelToWorld = translation * rotation * scale;
 	Mat4f normalTransform = transpose(invert(modelToWorld));
 	// Draw the model with your model-to-world transformation.
@@ -431,8 +451,8 @@ void App::render() {
 	// Show status messages. You may find it useful to show some debug information in a message.
 	common_ctrl_.message(sprintf("Use Home/End to rotate camera."), "instructions");
 	common_ctrl_.message(sprintf("Camera is at (%.2f %.2f %.2f) looking towards origin.",
-		-FW::sin(camera_rotation_angle_) * camera_distance, 0.0f,
-		-FW::cos(camera_rotation_angle_) * camera_distance), "camerainfo");
+		-FW::sin(cam_rot_around_y_) * camera_distance, 0.0f,
+		-FW::cos(cam_rot_around_y_) * camera_distance), "camerainfo");
 }
 
 vector<Vertex> App::loadObjFileModel(string filename) {

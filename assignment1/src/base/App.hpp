@@ -60,7 +60,10 @@ private:
 
 	std::vector<Vertex>	vertices_;
 
-	float				camera_rotation_angle_;
+	float				cam_rot_around_y_;
+	float				cam_rot_around_x_;
+	bool				mouseDragging_;
+	Vec2i				lastMousePos_;
 	Vec3f				translation_;
 	float				object_y_rotation_;
 	float				object_x_scale_;
