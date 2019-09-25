@@ -37,10 +37,22 @@ Curve coreBezier(const Vec3f& p0,
 	// computing points on the spline
 
 	Mat4f B;
-	// ...
+	B.setCol(1, Vec4f(-3, 3, 0, 0));
+	B.setCol(2, Vec4f(3, -6, 3, 0));
+	B.setCol(3, Vec4f(-1, 3, -3, 1));
 
 	for (unsigned i = 0; i <= steps; ++i) {
-		// ...
+		float t = (float)i / steps;
+		float ti = 1 - t;
+		CurvePoint c;
+		Mat4f M;
+		M.setCol(0, Vec4f(p0, 0));
+		M.setCol(1, Vec4f(p1, 0));
+		M.setCol(2, Vec4f(p2, 0));
+		M.setCol(3, Vec4f(p3, 0));
+		Vec4f V = B * Vec4f(1, t, t * t, t * t * t);
+		c.V = (M * V).getXYZ;
+		R[i] = c;
 	}
 
 	return R;
@@ -79,6 +91,7 @@ Curve evalBezier(const vector<Vec3f>& P, unsigned steps, bool adaptive, float er
     // variable however you want, so long as you can control the
     // "resolution" of the discretized spline curve with it.
 
+	Curve ret;
 	// EXTRA CREDIT NOTE:
     // Also compute the other Vec3fs for each CurvePoint: T, N, B.
     // A matrix [N, B, T] should be unit and orthogonal.
@@ -92,7 +105,9 @@ Curve evalBezier(const vector<Vec3f>& P, unsigned steps, bool adaptive, float er
 	// for example, to add 'b' to the end of 'a', we'd call 'a.insert(a.end(), b.begin(), b.end());'
 
     cerr << "\t>>> Control points (type vector<Vec3f>): "<< endl;
-    for (unsigned i = 0; i < P.size(); ++i) {
+    for (unsigned i = 0; i < P.size() - 1; i += 3) {
+		Curve c = coreBezier(P[i], P[i + 1], P[i + 2], P[i + 3], Vec3f(0, 0, 0), steps);
+		ret.insert(ret.end(), c.begin(), c.end());
         cerr << "\t>>> "; printTranspose(P[i]); cerr << endl;
     }
 
@@ -100,7 +115,7 @@ Curve evalBezier(const vector<Vec3f>& P, unsigned steps, bool adaptive, float er
     cerr << "\t>>> Returning empty curve." << endl;
 
     // Right now this will just return this empty curve.
-    return Curve();
+    return ret;
 }
 
 // the P argument holds the control points and steps gives the amount of uniform tessellation.
@@ -117,12 +132,33 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
 	// B-spline to Bezier.  That way, you can just call your evalBezier function.
 
     cerr << "\t>>> evalBSpline has been called with the following input:" << endl;
+	Mat4f BSpline;
+	BSpline.setRow(0, Vec4f(1, -3, 3, -1));
+	BSpline.setRow(1, Vec4f(4, 0, -6, 3));
+	BSpline.setRow(2, Vec4f(1, 3, 3, -3));
+	BSpline = BSpline / 6;
+
+	Mat4f Bezier;
+	Bezier.setRow(0, Vec4f(1, -3, 3, -1));
+	Bezier.setRow(1, Vec4f(0, 3, -6, 3));
+	Bezier.setRow(2, Vec4f(0, 0, 3, -3));
+
+	Mat4f BSplineToBezier = BSpline * invert(Bezier);
+
+	Curve ret;
+	vector<Vec3f> vecs;
 
     cerr << "\t>>> Control points (type vector< Vec3f >): "<< endl;
-    for (unsigned i = 0; i < P.size(); ++i) {
-        cerr << "\t>>> "; printTranspose(P[i]); cerr << endl;
-    }
-
+	for (unsigned i = 3; i < P.size(); ++i) {
+		cerr << "\t>>> "; printTranspose(P[i]); cerr << endl;
+		Mat4f M;
+		for (int j = 3; j >= 0; --j)
+			M.setCol(i, Vec4f(P[i - j], 0));
+		Mat4f C = M * BSplineToBezier;
+		for (int j = 0; j < 4; j++)
+			vecs.push_back(Vec4f(C.getCol(0)).getXYZ);
+	}
+	ret = evalBezier(vecs, steps, adaptive, errorbound, minstep);
     cerr << "\t>>> Steps (type steps): " << steps << endl;
     cerr << "\t>>> Returning empty curve." << endl;
 
