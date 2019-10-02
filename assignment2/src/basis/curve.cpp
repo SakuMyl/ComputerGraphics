@@ -51,7 +51,7 @@ Curve coreBezier(const Vec3f& p0,
 		M.setCol(2, Vec4f(p2, 0));
 		M.setCol(3, Vec4f(p3, 0));
 		Vec4f V = B * Vec4f(1, t, t * t, t * t * t);
-		c.V = (M * V).getXYZ;
+		c.V = (M * V).getXYZ();
 		R[i] = c;
 	}
 
@@ -146,24 +146,26 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
 	Mat4f BSplineToBezier = BSpline * invert(Bezier);
 
 	Curve ret;
-	vector<Vec3f> vecs;
 
     cerr << "\t>>> Control points (type vector< Vec3f >): "<< endl;
 	for (unsigned i = 3; i < P.size(); ++i) {
 		cerr << "\t>>> "; printTranspose(P[i]); cerr << endl;
 		Mat4f M;
 		for (int j = 3; j >= 0; --j)
-			M.setCol(i, Vec4f(P[i - j], 0));
+			M.setCol(3 - j, Vec4f(P[i - j], 0));
 		Mat4f C = M * BSplineToBezier;
+		vector<Vec3f> vecs;
 		for (int j = 0; j < 4; j++)
-			vecs.push_back(Vec4f(C.getCol(0)).getXYZ);
+			vecs.push_back(Vec4f(C.getCol(j)).getXYZ());
+		Curve curve = evalBezier(vecs, steps, adaptive, errorbound, minstep);
+		for (auto c : curve)
+			ret.push_back(c);
 	}
-	ret = evalBezier(vecs, steps, adaptive, errorbound, minstep);
-    cerr << "\t>>> Steps (type steps): " << steps << endl;
+	cerr << "\t>>> Steps (type steps): " << steps << endl;
     cerr << "\t>>> Returning empty curve." << endl;
 
     // Return an empty curve right now.
-    return Curve();
+    return ret;
 }
 
 Curve evalCircle(float radius, unsigned steps) {
