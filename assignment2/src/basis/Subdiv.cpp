@@ -250,7 +250,27 @@ void MeshWithConnectivity::LoopSubdivision() {
 			// vertices with a visible color, so you can ensure that the 1-ring generated is correct.
 			// The solution exe implements this so you can see an example of what you can do with the
 			// highlight mode there.
-			pos = positions[v0];
+
+			std::vector<int> vertices = { indices[i][(j + 1) % 3] };
+			int triangle = neighborTris[i][j];
+			int edge = (neighborEdges[i][j] + 1) % 3;
+			bool isBoundary = false;
+			while (triangle != i) {
+				if (triangle == -1) {
+					isBoundary = true;
+					break;
+				}
+				vertices.push_back(indices[triangle][(edge + 1) % 3]);
+				int temp = triangle;
+				triangle = neighborTris[triangle][edge];
+				edge = (neighborEdges[temp][edge] + 1) % 3;
+			}
+			int n = vertices.size();
+			float B = n == 3 ? 3.0f / 16 : 3.0f / (8 * n);
+			pos = (1 - n * B) * positions[v0];
+			for (auto v : vertices)
+				pos = pos + B * positions[v];
+			pos = isBoundary ? positions[v0] : pos;
 			col = colors[v0];
 			norm = normals[v0];
 
