@@ -20,7 +20,7 @@ struct glGeneratedIndices
 	GLuint static_vao, dynamic_vao;
 	GLuint shader_program;
 	GLuint static_vertex_buffer, dynamic_vertex_buffer;
-	GLuint model_to_world_uniform, world_to_clip_uniform, shading_toggle_uniform;
+	GLuint model_to_world_uniform, world_to_clip_uniform, shading_toggle_uniform, normal_transform_uniform;
 };
 
 class App : public Window::Listener
@@ -60,7 +60,10 @@ private:
 
 	std::vector<Vertex>	vertices_;
 
-	float				camera_rotation_angle_;
+	float				cam_rot_around_y_;
+	float				cam_rot_around_x_;
+	bool				mouseDragging_;
+	Vec2i				lastMousePos_;
 	Vec3f				translation_;
 	float				object_y_rotation_;
 	float				object_x_scale_;
