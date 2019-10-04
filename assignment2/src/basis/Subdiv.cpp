@@ -316,8 +316,8 @@ void MeshWithConnectivity::LoopSubdivision() {
 		// NOTE: REMOVE the following line after you're done with the new triangles.
 		// This just keeps the mesh intact and serves as an example on how to add new triangles.
 		new_indices.push_back(Vec3i(even[0], odd[0], odd[2]));
-		new_indices.push_back(Vec3i(even[1], odd[0], odd[1]));
-		new_indices.push_back(Vec3i(even[2], odd[1], odd[2]));
+		new_indices.push_back(Vec3i(even[1], odd[1], odd[0]));
+		new_indices.push_back(Vec3i(even[2], odd[2], odd[1]));
 		new_indices.push_back(odd);
 }
 
