@@ -251,12 +251,22 @@ void MeshWithConnectivity::LoopSubdivision() {
 			// vertices with a visible color, so you can ensure that the 1-ring generated is correct.
 			// The solution exe implements this so you can see an example of what you can do with the
 			// highlight mode there.
+			
+			//initialize the vertices to be used as weights with the other vertices of the current triangle
+			std::vector<int> vertices = { indices[i][(j + 1) % 3], indices[i][(j + 2) % 3] };
+			//Set boundary vertices in case this vertex does not have a complete 1-ring
+			bool isBoundary = false;
+			int boundaryVertex1 = vertices[0], boundaryVertex2 = vertices[1];
 
-			std::vector<int> vertices = { indices[i][(j + 1) % 3] };
+			bool done = false;
+			//loop through the 1-ring counter-clockwise
 			int triangle = neighborTris[i][j];
 			int edge = (neighborEdges[i][j] + 1) % 3;
-			bool isBoundary = false;
-			while (triangle != i) {
+			while (true) {
+				if (triangle == i) {
+					done = true;
+					break;
+				}
 				if (triangle == -1) {
 					isBoundary = true;
 					break;
@@ -265,16 +275,35 @@ void MeshWithConnectivity::LoopSubdivision() {
 				int temp = triangle;
 				triangle = neighborTris[triangle][edge];
 				edge = (neighborEdges[temp][edge] + 1) % 3;
+				boundaryVertex1 = vertices[vertices.size() - 1];
+			}
+			//Loop through the rest of the ring clockwise
+			if (!done) {
+				triangle = neighborTris[i][(j + 2) % 3];
+				edge = (neighborEdges[i][(j + 2) % 3] + 2) % 3;
+				while (triangle != i) {
+					if (triangle == -1) {
+						isBoundary = true;
+						break;
+					}
+					vertices.push_back(indices[triangle][edge]);
+					int temp = triangle;
+					triangle = neighborTris[triangle][edge];
+					edge = (neighborEdges[temp][edge] + 2) % 3;
+					boundaryVertex2 = vertices[vertices.size() - 1];
+				}
 			}
 			int n = vertices.size();
-			float B = n == 3 ? 3.0f / 16 : 3.0f / (8 * n);
-			pos = (1 - n * B) * positions[v0];
-			for (auto v : vertices)
-				pos = pos + B * positions[v];
-			pos = isBoundary ? positions[v0] : pos;
+			if (isBoundary) {
+				pos = 0.75f * positions[v0] + 0.125f * (positions[boundaryVertex1] + positions[boundaryVertex2]);
+			} else {
+				float B = n == 3 ? 3.0f / 16 : 3.0f / (8 * n);
+				pos = (1 - n * B) * positions[v0];
+				for (auto v : vertices)
+					pos = pos + B * positions[v];
+			}
 			col = colors[v0];
 			norm = normals[v0];
-
 
 			// Stop here if we're doing the debug pass since we don't actually need to modify the mesh
 			if (debugPass)
