@@ -66,6 +66,9 @@ void Skeleton::updateToWorldTransforms(unsigned joint_index, const Mat4f& parent
 
 void Skeleton::computeToBindTransforms() {
 	updateToWorldTransforms();
+	for (auto& joint : joints_) {
+		joint.to_bind_joint = joint.to_world.inverted();
+	}
 	// YOUR CODE HERE (R4)
 	// Given the current to_world transforms for each bone,
 	// compute the inverse bind pose transformations (as per the lecture slides),
@@ -89,7 +92,9 @@ vector<Mat4f> Skeleton::getSSDTransforms() {
 	// these are the T_i * inv(B_i) matrices.)
 
 	vector<Mat4f> transforms;
-
+	for (int i = 0; i < joints_.size(); ++i) {
+		transforms.push_back(joints_[i].to_world * joints_[i].to_bind_joint);
+	}
 
 	return transforms;
 }
