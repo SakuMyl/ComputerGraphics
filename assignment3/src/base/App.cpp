@@ -454,7 +454,7 @@ vector<Vertex> App::computeSSD(const vector<WeightedVertex>& source_vertices) {
 			transform += sv.weights[i] * ssd_transforms[sv.joints[i]];
 		}
 		v.position = transform * sv.position;
-		v.normal = sv.normal;
+		v.normal = (transform.getXYZ() * sv.normal).normalized();
 		v.color = sv.color;
 		skinned_vertices.push_back(v);
 	}
