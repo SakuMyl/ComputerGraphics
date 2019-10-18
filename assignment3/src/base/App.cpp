@@ -240,12 +240,18 @@ void App::initRendering()
 		const int numJoints = 100;
 		uniform mat4 uJoints[numJoints];
 	
+		mat4 transform = mat4(0);
+		
 		void main()
 		{
-			float clampedCosine = clamp(dot(aNormal, directionToLight), 0.0, 1.0);
+			for (int i = 0; i < aJoints1.size(); ++i) {
+				transform += aWeights1[i] * uJoints[aJoints1[i]];
+			}
+			mat3 normalTransform = mat3(transform);
+			float clampedCosine = clamp(dot(normalize(normalTransform * aNormal), directionToLight), 0.0, 1.0);
 			vec3 litColor = vec3(clampedCosine);
 			vColor = vec4(mix(aColor.xyz, litColor, uShadingMix), 1);
-			gl_Position = uWorldToClip * aPosition;
+			gl_Position = uWorldToClip * transform * aPosition;
 		}
 		),
 		"#version 330\n"
