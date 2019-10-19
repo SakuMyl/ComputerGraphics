@@ -244,8 +244,8 @@ void App::initRendering()
 		
 		void main()
 		{
-			for (int i = 0; i < aJoints1.size(); ++i) {
-				transform += aWeights1[i] * uJoints[aJoints1[i]];
+			for (int i = 0; i < 4; ++i) {
+				transform += aWeights1[i] * uJoints[aJoints1[i]] + aWeights2[i] * uJoints[aJoints2[i]];
 			}
 			mat3 normalTransform = mat3(transform);
 			float clampedCosine = clamp(dot(normalize(normalTransform * aNormal), directionToLight), 0.0, 1.0);
