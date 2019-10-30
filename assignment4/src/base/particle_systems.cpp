@@ -131,12 +131,12 @@ void PendulumSystem::reset() {
 			Spring s;
 			s.rlen = steplen;
 			s.k = spring_k;
-			s.i1 = 2 * i;
-			s.i2 = 2 * (i + 1);
+			s.i1 = i;
+			s.i2 = i + 1;
 			springs[i] = s;
 		}
 	}
-	//springs_ = springs;
+	springs_ = springs;
 	// YOUR CODE HERE (R4)	
 	// Set the initial state for a pendulum system with n_ particles
 	// connected with springs into a chain from start_point to end_point.
@@ -147,15 +147,15 @@ State PendulumSystem::evalF(const State& state) const {
 	const auto mass = 0.5f;
 	auto f = State(2 * n_);
 	auto gravity = fGravity(mass);
-	f[0] = f[1] = 0;
 	for (int i = 1; i < n_; ++i) {
 		f[2 * i] = state[2 * i + 1];
 		f[2 * i + 1] = gravity + fDrag(state[2 * i + 1], drag_k);
 	}
 	for (auto s : springs_) {
-		f[s.i1 + 1] += fSpring(state[s.i1], state[s.i2], s.k, s.rlen);
-		f[s.i2 + 1] += fSpring(state[s.i2], state[s.i1], s.k, s.rlen);
+		f[2 * s.i1 + 1] += fSpring(state[2 * s.i2], state[2 * s.i1], s.k, s.rlen);
+		f[2 * s.i2 + 1] += fSpring(state[2 * s.i1], state[2 * s.i2], s.k, s.rlen);
 	}
+	f[0] = f[1] = 0;
 	//Divide by mass to get acceleration
 	for (auto &f_i : f) {
 		f_i = f_i / mass;
@@ -198,6 +198,50 @@ void ClothSystem::reset() {
 	const auto spring_k = 300.0f;
 	const auto width = 1.5f, height = 1.5f; // width and height of the whole grid
 	state_ = State(2 * x_*y_);
+	auto horizontal_step = width / x_;
+	auto vertical_step = height / y_;
+	auto diagonal_step = sqrtf(horizontal_step * horizontal_step + vertical_step * vertical_step);
+	vector<Spring> springs;
+	for (int i = 0; i < y_; ++i) {
+		for (int j = 0; j < x_; ++j) {
+			state_[2 * (i * x_ + j)] = Vec3f(j * horizontal_step - 0.75f, 0, -i * vertical_step);
+			state_[2 * (i * x_ + j) + 1] = 0;
+			Spring s;
+			s.k = spring_k;
+			s.i1 = x_ * i + j;
+			if (j != x_ - 1) {
+				s.rlen = horizontal_step;
+				s.i2 = s.i1 + 1;
+				springs.push_back(s);
+				if (j != x_ - 2) {
+					s.rlen = 2 * horizontal_step;
+					s.i2 = s.i1 + 2;
+					springs.push_back(s);
+				}
+				if (i != y_ - 1) {
+					s.rlen = diagonal_step;
+					s.i2 = x_ * (i + 1) + j + 1;
+					springs.push_back(s);
+				}
+				if (i != 0) {
+					s.rlen = diagonal_step;
+					s.i2 = x_ * (i - 1) + j + 1;
+					springs.push_back(s);
+				}
+			}
+			if (i != y_ - 1) {
+				s.rlen = vertical_step;
+				s.i2 = x_ * (i + 1) + j;
+				springs.push_back(s);
+				if (i != y_ - 2) {
+					s.rlen = 2 * vertical_step;
+					s.i2 = x_ * (i + 2) + j;
+					springs.push_back(s);
+				}
+			}
+		}
+	}
+	springs_ = springs;
 	// YOUR CODE HERE (R5)
 	// Construct a particle system with a x_ * y_ grid of particles,
 	// connected with a variety of springs as described in the handout:
@@ -209,6 +253,18 @@ State ClothSystem::evalF(const State& state) const {
 	const auto n = x_ * y_;
 	static const auto mass = 0.025f;
 	auto f = State(2 * n);
+	auto g = fGravity(mass);
+	for (int i = 0; i < n; ++i) {
+		f[2 * i] = state[2 * i + 1];
+		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k);
+	}
+	for (auto s : springs_) {
+		f[2 * s.i1 + 1] += fSpring(state[2 * s.i2], state[2 * s.i1], s.k, s.rlen);
+		f[2 * s.i2 + 1] += fSpring(state[2 * s.i1], state[2 * s.i2], s.k, s.rlen);
+	}
+	f[0] = f[1] = f[2 * (x_ - 1)] = f[2 * (x_ - 1) + 1] = 0;
+	//Divide by mass to get acceleration
+	for (auto& f_i : f) f_i = f_i / mass;
 	// YOUR CODE HERE (R5)
 	// This will be much like in R2 and R4.
 	return f;
