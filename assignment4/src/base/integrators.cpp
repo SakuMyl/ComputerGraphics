@@ -46,7 +46,32 @@ void midpointStep(ParticleSystem& ps, float step) {
 }
 
 void rk4Step(ParticleSystem& ps, float step) {
-	// EXTRA: Implement the RK4 Runge-Kutta integrator.
+	State initial_state = ps.state();
+	State k1 = ps.evalF(initial_state);
+	for (auto& f : k1) f *= step;
+	State state2(initial_state.size());
+	State state3(initial_state.size());
+	State state4(initial_state.size());
+	State final_state(initial_state.size());
+	for (int i = 0; i < initial_state.size(); ++i) {
+		state2[i] = initial_state[i] + 0.5f * k1[i];
+	}
+	State k2 = ps.evalF(state2);
+	for (auto& f : k2) f *= step;
+	for (int i = 0; i < initial_state.size(); ++i) {
+		state3[i] = initial_state[i] + 0.5f * k2[i];
+	}
+	State k3 = ps.evalF(state3);
+	for (auto& f : k3) f *= step;
+	for (int i = 0; i < initial_state.size(); ++i) {
+		state4[i] = initial_state[i] + k3[i];
+	}
+	State k4 = ps.evalF(state4);
+	for (auto& f : k4) f *= step;
+	for (int i = 0; i < initial_state.size(); ++i) {
+		final_state[i] = initial_state[i] + (1.0f / 6) * (k1[i] + 2.0f * k2[i] + 2.0f * k3[i] + k4[i]);
+	}
+	ps.set_state(final_state);
 }
 
 #ifdef EIGEN_SPARSECORE_MODULE_H
