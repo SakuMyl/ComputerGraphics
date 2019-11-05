@@ -27,6 +27,10 @@ namespace {
 		return -k * v;
 	}
 
+	inline Vec3f fWind(Vec3f direction, float magnitude) {
+		return direction * magnitude;
+	}
+
 } // namespace
 
 void SimpleSystem::reset() {
@@ -198,6 +202,7 @@ void ClothSystem::reset() {
 	const auto spring_k = 300.0f;
 	const auto width = 1.5f, height = 1.5f; // width and height of the whole grid
 	state_ = State(2 * x_*y_);
+	wind_ = false;
 	auto horizontal_step = width / x_;
 	auto vertical_step = height / y_;
 	auto diagonal_step = sqrtf(horizontal_step * horizontal_step + vertical_step * vertical_step);
@@ -256,7 +261,7 @@ State ClothSystem::evalF(const State& state) const {
 	auto g = fGravity(mass);
 	for (int i = 0; i < n; ++i) {
 		f[2 * i] = state[2 * i + 1];
-		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k);
+		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k) + (wind_ ? fWind(Vec3f(0, 0, 1), 1.0f) : 0);
 	}
 	for (auto s : springs_) {
 		f[2 * s.i1 + 1] += fSpring(state[2 * s.i2], state[2 * s.i1], s.k, s.rlen);

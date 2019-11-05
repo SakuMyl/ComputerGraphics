@@ -133,6 +133,8 @@ bool App::handleEvent(const Window::Event& ev) {
 			camera_rotation_angle_ -= 0.05 * FW_PI;
 		else if (ev.key == FW_KEY_END)
 			camera_rotation_angle_ += 0.05 * FW_PI;
+		else if (ev.key == FW_KEY_W)
+			ps_->toggle_wind();
 	}
 
 	if (ev.type == Window::EventType_Mouse) {

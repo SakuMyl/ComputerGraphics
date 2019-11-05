@@ -39,10 +39,13 @@ public:
 	virtual void			reset() = 0;
 	const State&			state() { return state_; }
 	void					set_state(State s) { state_ = s; }
+	virtual void			toggle_wind() {};
 	virtual Points			getPoints() { return Points(); }
 	virtual Lines			getLines() { return Lines(); }
 protected:
 	State					state_;
+private:
+	bool					wind_;
 };
 
 class SimpleSystem : public ParticleSystem {
@@ -99,12 +102,14 @@ public:
 	void					evalJ(const State&, SparseMatrix& result, bool initial) const override;
 #endif
 	void					reset() override;
+	virtual void			toggle_wind() { wind_ = !wind_; }
 	Points					getPoints() override;
 	Lines					getLines() override;
 	FW::Vec2i				getSize() { return FW::Vec2i(x_, y_); }
 
 private:
 	unsigned				x_, y_;
+	bool					wind_;
 	std::vector<Spring>		springs_;
 };
 
