@@ -40,6 +40,8 @@ public:
 	const State&			state() { return state_; }
 	void					set_state(State s) { state_ = s; }
 	virtual void			toggle_wind() {};
+	virtual void			add_particles() {};
+	virtual void			toggle_plane() {};
 	virtual Points			getPoints() { return Points(); }
 	virtual Lines			getLines() { return Lines(); }
 protected:
@@ -116,15 +118,19 @@ private:
 class FluidSystem : public ParticleSystem {
 public:
 							FluidSystem(unsigned n) : n_(n) { reset(); }
+							FluidSystem() { reset(); }
 	State					evalF(const State&) const override;
 #ifdef EIGEN_SPARSECORE_MODULE_H
 	void					evalJ(const State&, SparseMatrix& result, bool initial) const override;
 #endif
 	void					reset() override;
+	void					add_particles();
+	virtual void			toggle_plane() { plane_ = !plane_; }
 	Points					getPoints() override;
-	Lines					getLines() override;
+	Lines					getLines() { return Lines(); };
 
 private:
 	unsigned				n_;
-	std::vector<unsigned>	asd;
+	bool					plane_;
+	std::vector<unsigned>	ages_;
 };

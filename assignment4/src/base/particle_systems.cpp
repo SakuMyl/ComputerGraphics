@@ -304,6 +304,56 @@ Lines ClothSystem::getLines() {
 	return l;
 }
 State FluidSystem::evalF(const State&) const {
-	return State();
+	auto buoyancy = -fGravity(100.0f);
+	auto kDrag = 0.05f;
+	State f(2 * n_);
+	auto sqrt2 = sqrtf(2.0f);
+	for (int i = 0; i < n_; ++i) {
+		if (ages_[i] != 0) {
+			auto pos = state_[2 * i];
+			auto vel = state_[2 * i + 1];
+			//The particle hits a plane if it's toggled
+			if (plane_ && -pos.x + pos.y > 0.5f && pos.x < 0.5f) {
+				vel = Vec3f(vel.y, vel.x, vel.z);
+			}
+			f[2 * i] = vel;
+			f[2 * i + 1] = buoyancy + fDrag(vel, kDrag);
+		}
+	}
+	return f;
 }
+
+void FluidSystem::add_particles() {
+	vector<unsigned> new_ages;
+	State new_state;
+	for (int i = 0; i < n_; ++i) {
+		if (ages_[i] < 500) {
+			new_ages.push_back(ages_[i] + 1);
+			new_state.push_back(state_[2 * i]);
+			new_state.push_back(state_[2 * i + 1]);
+		}
+	}
+	for (int i = 0; i < 5; ++i) {
+		new_ages.push_back(0);
+		new_state.push_back(Vec3f(0.5f * rand() / RAND_MAX - 0.25f, 0.5f * rand() / RAND_MAX - 1.0f, 0.5f * rand() / RAND_MAX - 0.25f));
+		new_state.push_back(Vec3f(10.0f * rand() / RAND_MAX - 5.0f, 10.0f * rand() / RAND_MAX, 10.0f * rand() / RAND_MAX - 5.0f));
+	}
+	state_ = new_state;
+	ages_ = new_ages;
+	n_ = ages_.size();
+}
+
+void FluidSystem::reset() {
+	n_ = 0;
+	plane_ = true;
+}
+
+Points FluidSystem::getPoints() {
+	auto p = Points(n_);
+	for (int i = 0; i < n_; ++i) {
+		p[i] = state_[2 * i];
+	}
+	return p;
+}
+
 

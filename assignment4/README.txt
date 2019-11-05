@@ -26,7 +26,7 @@ Both
          R5 Cloth system (3p): done
 
 # Did you do any extra credit work?
-Random wind force for cloth system, wind can be toggled by pressing W. RK4 integrator. 
+Random wind force for cloth system, wind can be toggled by pressing W. RK4 integrator. Rising smoke particle system for which there is an extra button in the GUI. The plane blocking the particles can be toggled by pressing P.  
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 
 # Are there any known problems/bugs remaining in your code?

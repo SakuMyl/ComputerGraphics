@@ -54,6 +54,7 @@ App::App(void)
 	common_ctrl_.addToggle((S32*)&ps_type_, SPRING_SYSTEM, FW_KEY_2, "R2 Spring system (2)", &system_changed_);
 	common_ctrl_.addToggle((S32*)&ps_type_, PENDULUM_SYSTEM, FW_KEY_3, "R4 Pendulum system (3)", &system_changed_);
 	common_ctrl_.addToggle((S32*)&ps_type_, CLOTH_SYSTEM, FW_KEY_4, "R5 Cloth system (4)", &system_changed_);
+	common_ctrl_.addToggle((S32*)& ps_type_, FLUID_SYSTEM, FW_KEY_5, "Rising smoke", &system_changed_);
 #ifdef COMPUTE_CLOTH_MODULE
 	common_ctrl_.addToggle((S32*)&ps_type_, COMPUTE_CLOTH, FW_KEY_NONE, "EXTRA: Compute cloth", &system_changed_);
 #endif
@@ -107,6 +108,8 @@ bool App::handleEvent(const Window::Event& ev) {
 			ps_ = &pendulum_system_; break;
 		case CLOTH_SYSTEM:
 			ps_ = &cloth_system_; break;
+		case FLUID_SYSTEM:
+			ps_ = &fluid_system_; break;
 #ifdef COMPUTE_CLOTH_MODULE
 		case COMPUTE_CLOTH:
 			integrator_ = COMPUTE_CLOTH_INTEGRATOR;
@@ -135,6 +138,8 @@ bool App::handleEvent(const Window::Event& ev) {
 			camera_rotation_angle_ += 0.05 * FW_PI;
 		else if (ev.key == FW_KEY_W)
 			ps_->toggle_wind();
+		else if (ev.key == FW_KEY_P)
+			ps_->toggle_plane();
 	}
 
 	if (ev.type == Window::EventType_Mouse) {

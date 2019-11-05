@@ -34,7 +34,8 @@ private:
 		SPRING_SYSTEM,
 		PENDULUM_SYSTEM,
 		CLOTH_SYSTEM,
-		COMPUTE_CLOTH
+		COMPUTE_CLOTH,
+		FLUID_SYSTEM
 	};
 	enum IntegratorType {
 		EULER_INTEGRATOR,
@@ -81,6 +82,7 @@ private:
 	SpringSystem	spring_system_;
 	PendulumSystem	pendulum_system_;
 	ClothSystem		cloth_system_;
+	FluidSystem		fluid_system_;
 
 	bool			initial_implicit_;
 
