@@ -1,0 +1,48 @@
+* (1270fe7) 2019-11-05 16:25:18 +0200 <myllymakisaku@gmail.com>
+| add wind for cloth system
+* (5a5eef3) 2019-10-31 20:42:42 +0200 <saku.myllymaki@aalto.fi>
+| RK4 integrator
+*   (6fbf3ba) 2019-10-30 20:48:41 +0200 <saku.myllymaki@aalto.fi>
+|\  R5 done
+| * (d963bac) 2019-10-30 16:01:28 +0200 <saku.myllymaki@aalto.fi>
+| | R1-R3 done, R4 WIP
+* | (1f27844) 2019-10-30 15:06:23 +0200 <saku.myllymaki@aalto.fi>
+|/  R1-R3 done, R4 WIP
+*   (b0bf9f4) 2019-10-19 17:40:25 +0300 <saku.myllymaki@aalto.fi>
+|\  merge
+| * (278ab8f) 2019-10-18 12:45:36 +0300 <saku.myllymaki@aalto.fi>
+| | update readme
+| * (8549c39) 2019-10-18 12:32:57 +0300 <saku.myllymaki@aalto.fi>
+| | SSD on the GPU
+* | (0765196) 2019-10-18 12:10:21 +0300 <saku.myllymaki@aalto.fi>
+|/  vertex shader for transforms WIP
+* (3ce5f7a) 2019-10-16 15:51:12 +0300 <saku.myllymaki@aalto.fi>
+| R5 done
+* (ecc7dcb) 2019-10-15 14:08:22 +0300 <saku.myllymaki@aalto.fi>
+| R4 done
+* (2f01c4b) 2019-10-11 18:56:52 +0300 <saku.myllymaki@aalto.fi>
+| R5 done
+* (f8256e2) 2019-10-11 18:43:03 +0300 <saku.myllymaki@aalto.fi>
+| R5 WIP
+* (cf56293) 2019-10-11 18:41:37 +0300 <saku.myllymaki@aalto.fi>
+| assignment 3 R3 done
+* (02aa88a) 2019-10-04 10:27:26 +0300 <saku.myllymaki@aalto.fi>
+| R5 WIP
+* (7f28b17) 2019-10-03 18:15:56 +0300 <saku.myllymaki@aalto.fi>
+| R5 WIP
+*   (da48811) 2019-10-03 14:02:14 +0300 <saku.myllymaki@aalto.fi>
+|\  R4 WIP
+| * (aa72452) 2019-10-02 15:52:43 +0300 <saku.myllymaki@aalto.fi>
+| | R2 and R3 done
+| * (02f170a) 2019-09-25 17:09:38 +0300 <saku.myllymaki@aalto.fi>
+| | R1 done
+| * (73a9234) 2019-09-25 14:10:56 +0300 <saku.myllymaki@aalto.fi>
+| | add assignment2
+| * (24af851) 2019-09-21 13:06:30 +0300 <saku.myllymaki@aalto.fi>
+| | rotate camera around object
+| * (70b83c6) 2019-09-19 13:04:07 +0300 <saku.myllymaki@aalto.fi>
+| | normal transforms
+* | (ec8e12b) 2019-09-18 16:01:43 +0300 <saku.myllymaki@aalto.fi>
+|/  transpose normals WIP
+* (5a175db) 2019-09-16 15:48:02 +0300 <saku.myllymaki@aalto.fi>
+  move repository folder
