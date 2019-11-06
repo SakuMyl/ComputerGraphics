@@ -40,7 +40,7 @@ public:
 	const State&			state() { return state_; }
 	void					set_state(State s) { state_ = s; }
 	virtual void			toggle_wind() {};
-	virtual void			add_particles() {};
+	virtual void			step() {};
 	virtual void			toggle_plane() {};
 	virtual Points			getPoints() { return Points(); }
 	virtual Lines			getLines() { return Lines(); }
@@ -104,7 +104,9 @@ public:
 	void					evalJ(const State&, SparseMatrix& result, bool initial) const override;
 #endif
 	void					reset() override;
-	virtual void			toggle_wind() { wind_ = !wind_; }
+	virtual void			toggle_wind() { wind_ = !wind_; reset_wind(); }
+	virtual void			reset_wind();
+	virtual void			step() override;
 	Points					getPoints() override;
 	Lines					getLines() override;
 	FW::Vec2i				getSize() { return FW::Vec2i(x_, y_); }
@@ -112,6 +114,10 @@ public:
 private:
 	unsigned				x_, y_;
 	bool					wind_;
+	FW::Vec3f				wind_dir_;
+	FW::Vec3f				target_dir_;
+	FW::Vec3f				initial_dir_;
+	int						step_;
 	std::vector<Spring>		springs_;
 };
 
@@ -124,7 +130,7 @@ public:
 	void					evalJ(const State&, SparseMatrix& result, bool initial) const override;
 #endif
 	void					reset() override;
-	void					add_particles();
+	void					step() override;
 	virtual void			toggle_plane() { plane_ = !plane_; }
 	Points					getPoints() override;
 	Lines					getLines() { return Lines(); };

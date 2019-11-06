@@ -170,6 +170,7 @@ bool App::handleEvent(const Window::Event& ev) {
 		}
 
 		for (int i = 0; i < steps_per_update_; ++i) {
+			ps_->step();
 			switch (integrator_) {
 			case EULER_INTEGRATOR:
 				eulerStep(*ps_, step_); break;

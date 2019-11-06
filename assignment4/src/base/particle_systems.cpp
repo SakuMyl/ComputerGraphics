@@ -27,8 +27,8 @@ namespace {
 		return -k * v;
 	}
 
-	inline Vec3f fWind(Vec3f direction, float magnitude) {
-		return direction * magnitude;
+	inline Vec3f fWind(Vec3f direction) {
+		return 0.5f * direction;
 	}
 
 } // namespace
@@ -203,6 +203,7 @@ void ClothSystem::reset() {
 	const auto width = 1.5f, height = 1.5f; // width and height of the whole grid
 	state_ = State(2 * x_*y_);
 	wind_ = false;
+	reset_wind();
 	auto horizontal_step = width / (x_ - 1);
 	auto vertical_step = height / (y_ - 1);
 	auto diagonal_step = sqrtf(horizontal_step * horizontal_step + vertical_step * vertical_step);
@@ -259,9 +260,10 @@ State ClothSystem::evalF(const State& state) const {
 	static const auto mass = 0.025f;
 	auto f = State(2 * n);
 	auto g = fGravity(mass);
+	Vec3f wind;
 	for (int i = 0; i < n; ++i) {
 		f[2 * i] = state[2 * i + 1];
-		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k) + (wind_ ? fWind(Vec3f(0, 0, 1), 1) : 0);
+		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k) + (wind_ ? fWind(wind_dir_) : 0);
 	}
 	for (auto s : springs_) {
 		f[2 * s.i1 + 1] += fSpring(state[2 * s.i2], state[2 * s.i1], s.k, s.rlen);
@@ -288,6 +290,21 @@ void ClothSystem::evalJ(const State& state, SparseMatrix& result, bool initial) 
 
 #endif
 
+void ClothSystem::step() {
+	if (step_ == 0) {
+		initial_dir_ = target_dir_;
+		target_dir_ = Vec3f(1.0f * rand() / RAND_MAX - 0.5f, 1.0f * rand() / RAND_MAX - 0.5f, 1.0f * rand() / RAND_MAX - 0.5f);
+	}
+	float t = step_ / 10000.0f;
+	t = (FW::cos(FW_PI * t) + 1) / 2;
+	wind_dir_ = (t * initial_dir_ + (1 - t) * target_dir_);
+	if (step_ == 10000) step_ = 0; else step_++;
+}
+void ClothSystem::reset_wind() {
+	initial_dir_ = target_dir_ = wind_dir_ = 0;
+	step_ = 0;
+}
+
 Points ClothSystem::getPoints() {
 	auto n = x_ * y_;
 	auto p = Points(n);
@@ -309,7 +326,6 @@ State FluidSystem::evalF(const State&) const {
 	auto buoyancy = -fGravity(100.0f);
 	auto kDrag = 0.05f;
 	State f(2 * n_);
-	auto sqrt2 = sqrtf(2.0f);
 	for (int i = 0; i < n_; ++i) {
 		if (ages_[i] != 0) {
 			auto pos = state_[2 * i];
@@ -325,7 +341,7 @@ State FluidSystem::evalF(const State&) const {
 	return f;
 }
 
-void FluidSystem::add_particles() {
+void FluidSystem::step() {
 	vector<unsigned> new_ages;
 	State new_state;
 	for (int i = 0; i < n_; ++i) {

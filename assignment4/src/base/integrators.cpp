@@ -4,7 +4,6 @@
 #include "integrators.hpp"
 
 void eulerStep(ParticleSystem& ps, float step) {
-	ps.add_particles();
 	State f = ps.evalF(ps.state());
 	State old_state = ps.state();
 	State new_state(old_state.size());
@@ -15,7 +14,6 @@ void eulerStep(ParticleSystem& ps, float step) {
 };
 
 void trapezoidStep(ParticleSystem& ps, float step) {
-	ps.add_particles();
 	State s0 = ps.state();
 	State f0 = ps.evalF(s0);
 	State s1(f0.size());
@@ -33,7 +31,6 @@ void trapezoidStep(ParticleSystem& ps, float step) {
 }
 
 void midpointStep(ParticleSystem& ps, float step) {
-	ps.add_particles();
 	const auto& x0 = ps.state();
 	auto n = x0.size();
 	auto f0 = ps.evalF(x0);
@@ -49,7 +46,6 @@ void midpointStep(ParticleSystem& ps, float step) {
 }
 
 void rk4Step(ParticleSystem& ps, float step) {
-	ps.add_particles();
 	State initial_state = ps.state();
 	State k1 = ps.evalF(initial_state);
 	for (auto& f : k1) f *= step;

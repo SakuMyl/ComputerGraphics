@@ -6,7 +6,7 @@
 Student name: Saku Myllymaki
 Student number: 715298
 Hours spent on requirements (approx.): 10
-Hours spent on extra credit (approx.): 2
+Hours spent on extra credit (approx.): 4 
 
 # First, a 10-second poll about this assignment period:
 
@@ -26,7 +26,10 @@ Both
          R5 Cloth system (3p): done
 
 # Did you do any extra credit work?
-Random wind force for cloth system, wind can be toggled by pressing W. RK4 integrator. Rising smoke particle system for which there is an extra button in the GUI. The plane blocking the particles can be toggled by pressing P.  
+RK4 integrator. Rising smoke particle system for which there is an extra button in the GUI. The plane blocking the particles can be toggled by pressing P. Using a low step size makes the smoke look better. 
+Random wind force for cloth system, wind can be toggled by pressing W. I also made the wind direction interpolate between two random directions so that the
+directions are updated once every 10000 steps. To make the interpolation smoother, I used a trigonometric interpolator ( can I have extra points for this? :) ).
+Both adding particles in the fluid system and changing the wind direction are implemented with a step() method.
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 
 # Are there any known problems/bugs remaining in your code?
