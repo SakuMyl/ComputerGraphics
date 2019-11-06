@@ -203,8 +203,8 @@ void ClothSystem::reset() {
 	const auto width = 1.5f, height = 1.5f; // width and height of the whole grid
 	state_ = State(2 * x_*y_);
 	wind_ = false;
-	auto horizontal_step = width / x_;
-	auto vertical_step = height / y_;
+	auto horizontal_step = width / (x_ - 1);
+	auto vertical_step = height / (y_ - 1);
 	auto diagonal_step = sqrtf(horizontal_step * horizontal_step + vertical_step * vertical_step);
 	vector<Spring> springs;
 	for (int i = 0; i < y_; ++i) {
@@ -261,7 +261,7 @@ State ClothSystem::evalF(const State& state) const {
 	auto g = fGravity(mass);
 	for (int i = 0; i < n; ++i) {
 		f[2 * i] = state[2 * i + 1];
-		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k) + (wind_ ? fWind(Vec3f(0, 0, 1), 1.0f) : 0);
+		f[2 * i + 1] = g + fDrag(state[2 * i + 1], drag_k) + (wind_ ? fWind(Vec3f(0, 0, 1), 1) : 0);
 	}
 	for (auto s : springs_) {
 		f[2 * s.i1 + 1] += fSpring(state[2 * s.i2], state[2 * s.i1], s.k, s.rlen);
@@ -269,7 +269,9 @@ State ClothSystem::evalF(const State& state) const {
 	}
 	f[0] = f[1] = f[2 * (x_ - 1)] = f[2 * (x_ - 1) + 1] = 0;
 	//Divide by mass to get acceleration
-	for (auto& f_i : f) f_i = f_i / mass;
+	for (int i = 0; i < n; ++i) {
+		f[2 * i + 1] = f[2 * i + 1] / mass;
+	}
 	// YOUR CODE HERE (R5)
 	// This will be much like in R2 and R4.
 	return f;
