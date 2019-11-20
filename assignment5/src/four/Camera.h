@@ -15,6 +15,14 @@ public:
 
 	static inline FW::Vec2f normalizedImageCoordinateFromPixelCoordinate(const FW::Vec2f& pixel, const FW::Vec2i& imageSize) {
 		// YOUR CODE HERE (R1)
+		auto imageWidth = imageSize.x;
+		auto imageHeight = imageSize.y;
+		auto x = pixel.x;
+		auto y = pixel.y;
+		auto xNormalized = 2 * x / imageWidth - 1;
+		auto yNormalized = 2 * y / imageHeight - 1;
+		auto aspectRatio = (float)imageWidth / imageHeight;
+		auto upNormal = up.normalized();
 		// Given floating-point pixel coordinates (px,py), you should return the corresponding normalized screen coordinates in [-1,1]^2
 		// Pay attention to which direction is "up" :)
 
