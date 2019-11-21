@@ -19,14 +19,13 @@ public:
 		auto imageHeight = imageSize.y;
 		auto x = pixel.x;
 		auto y = pixel.y;
-		auto xNormalized = 2 * x / imageWidth - 1;
-		auto yNormalized = 2 * y / imageHeight - 1;
-		auto aspectRatio = (float)imageWidth / imageHeight;
-		auto upNormal = up.normalized();
+		auto xNormalized = 2.0f * x / imageWidth - 1;
+		auto yNormalized = 2.0f * y / imageHeight - 1;
+		//auto aspectRatio = (float)imageWidth / imageHeight;
 		// Given floating-point pixel coordinates (px,py), you should return the corresponding normalized screen coordinates in [-1,1]^2
 		// Pay attention to which direction is "up" :)
 
-		return FW::Vec2f();
+		return FW::Vec2f(xNormalized, yNormalized);
 	}
 	
 	virtual float getTMin() const = 0 ; 
@@ -78,7 +77,9 @@ public:
 	virtual Ray generateRay(const FW::Vec2f& point) {
 		// YOUR CODE HERE (R1)
 		// Generate a ray with the given screen coordinates, which you should assume lie in [-1,1]^2
-		return Ray(FW::Vec3f(0.0f), FW::Vec3f(0.0f));
+		float x = point.x;
+		float y = point.y;
+		return Ray(center + x * size * horizontal + y * size * up, direction);
 	}
 
 	bool isOrtho() const override { return true; }

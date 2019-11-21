@@ -38,7 +38,7 @@ public:
     }
 
     FW::Vec3f getAmbientLight() const {
-        return ambient_light;
+        return ambient_light;	
     }
     
     int getNumLights() const {
