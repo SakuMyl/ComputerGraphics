@@ -20,8 +20,7 @@ public:
 		auto x = pixel.x;
 		auto y = pixel.y;
 		auto xNormalized = 2.0f * x / imageWidth - 1;
-		auto yNormalized = 2.0f * y / imageHeight - 1;
-		//auto aspectRatio = (float)imageWidth / imageHeight;
+		auto yNormalized = 1 - 2.0f * y / imageHeight;
 		// Given floating-point pixel coordinates (px,py), you should return the corresponding normalized screen coordinates in [-1,1]^2
 		// Pay attention to which direction is "up" :)
 
