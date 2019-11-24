@@ -78,7 +78,14 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 		Vec3f dir_to_light, incident_intensity;
 		float distance;
 		light->getIncidentIllumination(point, dir_to_light, incident_intensity, distance);
-		answer += m->shade(ray, hit, dir_to_light, incident_intensity, true);
+		bool add = true;
+		if (args_.shadows) {
+			Ray r = Ray(point, dir_to_light);
+			Hit h = Hit(distance);
+			auto objs = scene_.getGroup();
+			if (objs->intersect(r, h, 0.0001f)) add = false;
+		}
+		if(add) answer += m->shade(ray, hit, dir_to_light, incident_intensity, true);
 	}
 	// are there bounces left?
 	if (bounces >= 1) {
