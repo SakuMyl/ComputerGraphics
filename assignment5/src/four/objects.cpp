@@ -142,6 +142,21 @@ bool Triangle::intersect( const Ray& r, Hit& h, float tmin ) const {
 	// YOUR CODE HERE (R6)
 	// Intersect the triangle with the ray!
 	// Again, pay attention to respecting tmin and h.t!
+	auto v_a = vertices_[0];
+	auto v_b = vertices_[1];
+	auto v_c = vertices_[2];
+	Mat3f m;
+	auto dir = r.direction;
+	m.setCol(0, v_a - v_b);
+	m.setCol(1, v_a - v_c);
+	m.setCol(2, dir);
+	Vec3f answer = m.inverted() * (v_a - r.origin);
+	auto b = answer.x, c = answer.y, t = answer.z;
+	if (b > 0 && c > 0 && b + c < 1 && h.t > t && t >= tmin) {
+		Vec3f normal = (v_b - v_a).cross(v_c - v_a).normalized();
+		h.set(t, material(), normal);
+		return true;
+	}
 	return false;
 }
 
