@@ -52,6 +52,11 @@ bool Plane::intersect( const Ray& r, Hit& h, float tmin ) const {
 	// origin + direction * t = p(t)
 	// origin . normal + t * direction . normal = d;
 	// t = (d - origin . normal) / (direction . normal);
+	auto t = (offset_ - normal_.dot(r.origin)) / (normal_.dot(r.direction));
+	if (t < h.t && t >= tmin) {
+		h.set(t, material(), normal_);
+		return true;
+	}
 	return false;
 }
 
