@@ -21,7 +21,7 @@ Vec3f mirrorDirection(const Vec3f& normal, const Vec3f& incoming) {
 	// YOUR CODE HERE (R8)
 	// Pay attention to the direction which things point towards, and that you only
 	// pass in normalized vectors.
-	return Vec3f();
+	return (incoming - 2 * incoming.dot(normal) * normal).normalized();
 }
 
 bool transmittedDirection(const Vec3f& normal, const Vec3f& incoming, 
@@ -95,6 +95,10 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 			// Generate and trace a reflected ray to the ideal mirror direction and add
 			// the contribution to the result. Remember to modulate the returned light
 			// by the reflective color of the material of the hit point.
+			Vec3f dir = mirrorDirection(normal, ray.direction);
+			Ray r(point, dir);
+			Hit h;
+			answer += m->reflective_color(point) * traceRay(r, 0.0001f, bounces - 1, refr_index, h, debug_color);
 		}
 
 		// refraction, but only if surface is transparent!
