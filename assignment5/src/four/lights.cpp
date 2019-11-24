@@ -18,6 +18,9 @@ void DirectionalLight::getIncidentIllumination(const Vec3f& p,
 	(void)p; // suppress compiler warning for unused parameter
 
 	// YOUR CODE HERE (R4)
+	dir_to_light = -direction_;
+	distance = FLT_MAX;
+	incident_intensity = intensity_;
 	// You should fill in the appropriate information about the "infinitely distant" light
 	// for the renderer to use. See the comment in the base class for extra information.
 }

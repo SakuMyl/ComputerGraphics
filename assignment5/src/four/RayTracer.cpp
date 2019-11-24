@@ -64,7 +64,7 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	// YOUR CODE HERE (R1)
 	// Apply ambient lighting using the ambient light of the scene
 	// and the diffuse color of the material.
-	Vec3f answer = m->diffuse_color(point) + m->diffuse_color(point) * scene_.getAmbientLight();
+	Vec3f answer = m->diffuse_color(point) * scene_.getAmbientLight();
 
 	// YOUR CODE HERE (R4 & R7)
 	// For R4, loop over all the lights in the scene and add their contributions to the answer.
@@ -72,7 +72,14 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	// into the debug_rays list similar to what is done to the primary rays after intersection.
 	// For R7, if args_.shadows is on, also shoot a shadow ray from the hit point to the light
 	// to confirm it isn't blocked; if it is, ignore the contribution of the light.
-
+	auto lights = scene_.getNumLights();
+	for (int i = 0; i < lights; ++i) {
+		auto light = scene_.getLight(i);
+		Vec3f dir_to_light, incident_intensity;
+		float distance;
+		light->getIncidentIllumination(point, dir_to_light, incident_intensity, distance);
+		answer += m->shade(ray, hit, dir_to_light, incident_intensity, false);
+	}
 	// are there bounces left?
 	if (bounces >= 1) {
 		// reflection, but only if reflective coefficient > 0!
