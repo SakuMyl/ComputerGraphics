@@ -116,6 +116,9 @@ GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
 		// Loop over pixels on a scanline
 		for (int i = 0; i < args.width; ++i) {
 			// Loop through all the samples for this pixel.
+			Vec3f sample_color;
+			Vec3f normal;
+			float t = 0;
 			for (int n = 0; n < args.num_samples; ++n) {
 				// Get the offset of the sample inside the pixel. 
 				// You need to fill in the implementation for this function when implementing supersampling.
@@ -136,7 +139,6 @@ GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
 
 				// You should fill in the gaps in the implementation of traceRay().
 				// args.bounces gives the maximum number of reflections/refractions that should be traced.
-				Vec3f sample_color = ray_tracer.traceRay(r, tmin, args.bounces, 1.0f, hit, Vec3f(1.0f));
 
 				// YOUR CODE HERE (R9)
 				// This starter code only supports one sample per pixel and consequently directly
@@ -145,38 +147,41 @@ GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
 				// The requirement is just to take an average of all the samples within the pixel
 				// (so-called "box filtering"). Note that this starter code does not take an average,
 				// it just assumes the first and only sample is the final color.
-
+				 
+				sample_color += ray_tracer.traceRay(r, tmin, args.bounces, 1.0f, hit, Vec3f(1.0f));
+				normal += hit.normal;
+				t += hit.t;
 				// For extra credit, you can implement more sophisticated ones, such as "tent" and bicubic
 				// "Mitchell-Netravali" filters. This requires you to implement the addSample()
-				// function in the Film class and use it instead of directly setting pixel values in the image.
+				// function in the Film class and use it instead of directly setting pixel values in the image.	
+			}
+			sample_color /= args.num_samples;
+			normal /= args.num_samples;
+			t /= args.num_samples;
+			// YOUR CODE HERE (R0)
+			// If args.display_uv is true, we want to render a test UV image where the color of each pixel
+			// is a simple function of its position in the image. The red component should linearly increase
+			// from 0 to 1 with the x coordinate increasing from 0 to args.width. Likewise the green component
+			// should linearly increase from 0 to 1 as the y coordinate increases from 0 to args.height. Since
+			// our image is two-dimensional we can't map blue to a simple linear function and just set it to 1.
+			if (args.display_uv)
+				sample_color = Vec3f((float)i / args.width, (float)j / args.height, 1);
 
-				// YOUR CODE HERE (R0)
-				// If args.display_uv is true, we want to render a test UV image where the color of each pixel
-				// is a simple function of its position in the image. The red component should linearly increase
-				// from 0 to 1 with the x coordinate increasing from 0 to args.width. Likewise the green component
-				// should linearly increase from 0 to 1 as the y coordinate increases from 0 to args.height. Since
-				// our image is two-dimensional we can't map blue to a simple linear function and just set it to 1.
-
-				if (args.display_uv)
-					sample_color = Vec3f((float)i / args.width, (float)j / args.height, 1);
-
-				image->setVec4f(Vec2i(i,j), Vec4f(sample_color, 1));
-				if (depth_image) {
-					// YOUR CODE HERE (R2)
-					// Here you should linearly map the t range [depth_min, depth_max] to the inverted range [1,0] for visualization
-					// Note the inversion; closer objects should appear brighter.
-					float s = args.depth_max - args.depth_min;
-					float f = (args.depth_max - hit.t) / s;
-					Vec3f col = Vec3f(f);
-					col = col.clamp(Vec3f(0), Vec3f(1));
-					depth_image->setVec4f(Vec2i(i, j), Vec4f(Vec3f(f), 1));
-				}
-				if (normals_image) {
-					Vec3f normal = hit.normal;
-					Vec3f col(fabs(normal[0]), fabs(normal[1]), fabs(normal[2]));
-					col = col.clamp(Vec3f(0), Vec3f(1));
-					normals_image->setVec4f( Vec2i( i, j ), Vec4f( col, 1 ) );
-				}
+			image->setVec4f(Vec2i(i, j), Vec4f(sample_color, 1));
+			if (depth_image) {
+				// YOUR CODE HERE (R2)
+				// Here you should linearly map the t range [depth_min, depth_max] to the inverted range [1,0] for visualization
+				// Note the inversion; closer objects should appear brighter.
+				float s = args.depth_max - args.depth_min;
+				float f = (args.depth_max - t) / s;
+				Vec3f col = Vec3f(f);
+				col = col.clamp(Vec3f(0), Vec3f(1));
+				depth_image->setVec4f(Vec2i(i, j), Vec4f(Vec3f(f), 1));
+			}
+			if (normals_image) {
+				Vec3f col(fabs(normal[0]), fabs(normal[1]), fabs(normal[2]));
+				col = col.clamp(Vec3f(0), Vec3f(1));
+				normals_image->setVec4f(Vec2i(i, j), Vec4f(col, 1));
 			}
 		}
 		++lines_done;
