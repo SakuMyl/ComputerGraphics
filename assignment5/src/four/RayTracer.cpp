@@ -85,7 +85,7 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 			auto objs = scene_.getGroup();
 			if (objs->intersect(r, h, 0.0001f)) add = false;
 		}
-		if(add) answer += m->shade(ray, hit, dir_to_light, incident_intensity, true);
+		if(add) answer += m->shade(ray, hit, dir_to_light, incident_intensity, args_.shade_back);
 	}
 	// are there bounces left?
 	if (bounces >= 1) {
@@ -104,6 +104,17 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 		// refraction, but only if surface is transparent!
 		if (m->transparent_color(point).length() > 0.0f) {
 			// YOUR CODE HERE (EXTRA)
+			float n1 = refr_index;
+			float ndoti = normal.dot(-ray.direction);
+			float n2 = ndoti > 0 ? m->refraction_index(point) : 1;
+			float nr = n1 / n2;
+			float d = 1 - nr * nr * (1 - ndoti * ndoti);
+			if (d > 0) {
+				Vec3f dir = (nr * ndoti - sqrtf(d)) * normal + nr * ray.direction;
+				Ray r(point, dir.normalized());
+				Hit h;
+				answer += m->transparent_color(point) * traceRay(r, 0.0001f, bounces - 1, n2, h, debug_color);
+			}
 			// Generate a refracted direction and trace the ray. For this, you need
 			// the index of refraction of the object. You should consider a ray going through
 			// the object "against the normal" to be entering the material, and a ray going
