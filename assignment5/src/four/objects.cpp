@@ -37,8 +37,34 @@ bool Group::intersect(const Ray& r, Hit& h, float tmin) const {
 bool Box::intersect(const Ray& r, Hit& h, float tmin) const {
 // YOUR CODE HERE (EXTRA)
 // Intersect the box with the ray!
-
-  return false;
+	Vec3f dir = r.direction;
+	Vec3f starts = (min_ - r.origin) / dir;
+	Vec3f ends = (max_ - r.origin) / dir;
+	float start = starts.max();
+	float end = ends.min();
+	Vec3f n;
+	if (start < end && end >= tmin) {
+		float a = 1;
+		float t = end;
+		//In case the ray's origin is inside the box, the normal will point to the same
+		//direction as the respective component of ray.direction, otherwise opposite
+		if (start >= tmin) {
+			a = -1;
+			t = start;
+		}
+		if (start == starts.x) {
+			n = Vec3f(dir.x > 0 ? a : -a, 0, 0);
+		}
+		else if (start == starts.y) {
+			n = Vec3f(0, dir.y > 0 ? a : -a, 0);
+		}
+		else {
+			n = Vec3f(0, 0, dir.z > 0 ? a : -a);
+		}
+		h.set(t, material(), n);
+		return true;
+	}
+	return false;
 }
 
 bool Plane::intersect( const Ray& r, Hit& h, float tmin ) const {
@@ -76,8 +102,12 @@ bool Transform::intersect(const Ray& r, Hit& h, float tmin) const {
 	// the ray direction, you can just keep the t value and do not need to
 	// recompute it!
 	// Remember how points, directions, and normals are transformed differently!
-
-	return false; 
+	Vec3f origin = (inverse_ * Vec4f(r.origin, 1)).getXYZ();
+	Vec3f direction = (inverse_ * Vec4f(r.direction, 0)).getXYZ();
+	Ray ray = Ray(origin, direction);
+	bool ret = object_->intersect(ray, h, tmin);
+	if (ret) h.set(h.t, object_->material(), (inverse_transpose_ * h.normal).normalized());
+	return ret; 
 }
 
 bool Sphere::intersect( const Ray& r, Hit& h, float tmin ) const {
