@@ -105,12 +105,13 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 		if (m->transparent_color(point).length() > 0.0f) {
 			// YOUR CODE HERE (EXTRA)
 			float n1 = refr_index;
-			float ndoti = normal.dot(-ray.direction);
-			float n2 = ndoti > 0 ? m->refraction_index(point) : 1;
+			Vec3f n = normal.dot(ray.direction) < 0 ? normal : -normal;
+			float n2 = n.dot(normal) > 0 ? m->refraction_index(point) : 1;
+			float ndoti = n.dot(-ray.direction);
 			float nr = n1 / n2;
 			float d = 1 - nr * nr * (1 - ndoti * ndoti);
 			if (d > 0) {
-				Vec3f dir = (nr * ndoti - sqrtf(d)) * normal + nr * ray.direction;
+				Vec3f dir = (nr * ndoti - sqrtf(d)) * n + nr * ray.direction;
 				Ray r(point, dir.normalized());
 				Hit h;
 				answer += m->transparent_color(point) * traceRay(r, 0.0001f, bounces - 1, n2, h, debug_color);
