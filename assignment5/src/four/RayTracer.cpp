@@ -32,6 +32,11 @@ bool transmittedDirection(const Vec3f& normal, const Vec3f& incoming,
 	// You should only pass in normalized vectors!
 	// The function should return true if the computation was successful, and false
 	// if the transmitted direction can't be computed due to total internal reflection.
+	float nr = index_i / index_t;
+	float ndoti = normal.dot(-incoming);
+	float d = 1 - nr * nr * (1 - ndoti * ndoti);
+	if (d < 0) return false;
+	transmitted = (nr * ndoti - sqrtf(d)) * normal + nr * incoming;
 	return true;
 }
 
@@ -104,14 +109,12 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 		// refraction, but only if surface is transparent!
 		if (m->transparent_color(point).length() > 0.0f) {
 			// YOUR CODE HERE (EXTRA)
-			float n1 = refr_index;
 			Vec3f n = normal.dot(ray.direction) < 0 ? normal : -normal;
+			//If n and normal point to the same direction i.e. are the same,
+			//the ray is entering a material, otherwise exiting
 			float n2 = n.dot(normal) > 0 ? m->refraction_index(point) : 1;
-			float ndoti = n.dot(-ray.direction);
-			float nr = n1 / n2;
-			float d = 1 - nr * nr * (1 - ndoti * ndoti);
-			if (d > 0) {
-				Vec3f dir = (nr * ndoti - sqrtf(d)) * n + nr * ray.direction;
+			Vec3f dir;
+			if (transmittedDirection(n, ray.direction, refr_index, n2, dir)) {
 				Ray r(point, dir.normalized());
 				Hit h;
 				answer += m->transparent_color(point) * traceRay(r, 0.0001f, bounces - 1, n2, h, debug_color);
