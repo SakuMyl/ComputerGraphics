@@ -6,7 +6,7 @@
 Student name: Saku Myllymaki
 Student number: 715298
 Hours spent on requirements (approx.): 12
-Hours spent on extra credit (approx.): 8
+Hours spent on extra credit (approx.): 10
 
 # First, a 10-second poll about this assignment period:
 
@@ -43,6 +43,6 @@ No
 (Did you help others? Did others help you? Let us know who you talked to, and what sort of help you gave or received.)
 
 # Any other comments you'd like to share about the assignment or the course so far?
-Handout instructions about the command line tool were difficult to follow. I would suggest that the command line tool be introduced as a set of commands that can be executed. Mention explicitly in the very beginning that the CLI is indeed the set of batch files located in the exe folder.
+Handout instructions about the command line tool were difficult to follow. I would suggest that the command line tool be introduced as a set of commands that can be executed with it, as any API. Mention explicitly in the very beginning that the CLI is indeed the set of batch files located in the exe folder.
+Assignments were fun, I enjoyed this round more than any other though there was a lot of work.
 (Was the assignment too long? Too hard? Fun or boring? Did you learn something, or was it a total waste of time? Can we do something differently to help you learn? Please be brutally honest; we won't take it personally.)
-
