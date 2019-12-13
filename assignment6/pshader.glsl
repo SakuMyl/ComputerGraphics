@@ -123,8 +123,9 @@ void main()
 		// Then transform to camera space and assign to mappedNormal.
 		// Don't forget to normalize!
 		vec3 normalFromTexture = vec3(.0);
-		// normalFromTexture = ...
-			
+		normalFromTexture = texture(normalSampler, texCoordVarying).xyz;
+		normalFromTexture = normalFromTexture * 2 - 1;
+		mappedNormal = normalize(normalToCamera * normalFromTexture);
 		// debug display: normals as read from the texture
 		if (renderMode == 2)
 		{
