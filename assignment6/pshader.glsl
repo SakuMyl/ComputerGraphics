@@ -56,7 +56,11 @@ const float PI = 3.14159265359;
 // The GGX distribution function D
 // YOUR CODE HERE (R3)
 float D(vec3 N, vec3 H) {
-	return 1.;
+	float cost = dot(N, H);
+	if(cost <= 0) return 0;
+	float r = pow(roughness, 2);
+	float tant = sqrt(1 - pow(cost, 2)) / cost;
+	return r / (PI * pow(cost, 4) * pow(r + pow(tant, 2), 2));
 }
 
 // The Smith geometry term G
@@ -72,7 +76,7 @@ float G(vec3 V, vec3 L, vec3 H) {
 // YOUR CODE HERE (R5)
 float Fr(vec3 L, vec3 H) {
 	const float n1 = 1.0; // air
-	const float n2 = 1.4; // surface
+	const float n2 = 1.4; // surfaceD
 
 	return 1.0;
 }
@@ -146,7 +150,7 @@ void main()
 	// YOUR CODE HERE (R3)
 	// Compute the to-viewer vector V which you'll need in the loop
 	// below for the specular computation.
-	vec3 V = vec3(.0);
+	vec3 V = normalize(-positionVarying);
 
 	// add the contribution of all lights to the answer
 	vec3 answer = vec3(.0);
@@ -159,13 +163,14 @@ void main()
 		// Compute the diffuse shading contribution of this light.
 
 		vec3 L = normalize(lightDirections[i]);
+		vec3 H = normalize(L + V);
 		vec3 Li = lightIntensities[i];
-		vec3 diffuse;
-
+		vec3 diffuse = diffuseColor.xyz;
 		// YOUR CODE HERE (R3, R4, R5)
 		// Compute the GGX specular contribution of this light.
-		vec3 specular;
-
+		vec3 specular = specularColor.xyz;
+		float Si = CookTorrance(N, H, V, L);
+		specular *= Si;
 		if (setDiffuseToZero)
 			diffuse = vec3(0, 0, 0);
 
@@ -179,6 +184,7 @@ void main()
 			//float shadow = 1.0f; // placeholder
 		}
 
+		light_contribution += (diffuse + specular * Si) * max(dot(L, N), 0) * Li;
 		if (renderMode >= 4) // debug mode; just sum up the specular distribution for each light
 			answer += vec3(specular);
 		else
