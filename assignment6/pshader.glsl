@@ -66,10 +66,12 @@ float D(vec3 N, vec3 H) {
 // The Smith geometry term G
 // YOUR CODE HERE (R4)
 float G1(vec3 X, vec3 H) {
-	return 1.;
+	float cost = dot(X, H);
+	float tant = sqrt(1 - pow(cost, 2)) / cost;
+	return 2 / (1 + sqrt(1 + pow(roughness * tant, 2)));
 }
 float G(vec3 V, vec3 L, vec3 H) {
-	return 1.;
+	return G1(V, H) * G1(L, H);
 }
 
 // Fr is the Fresnel equation for dielectrics
@@ -77,8 +79,13 @@ float G(vec3 V, vec3 L, vec3 H) {
 float Fr(vec3 L, vec3 H) {
 	const float n1 = 1.0; // air
 	const float n2 = 1.4; // surfaceD
-
-	return 1.0;
+	float n = n1 / n2;
+	float cost = dot(L, H);
+	float b = 1 / pow(n, 2) + pow(cost, 2) - 1;
+	if(b < 0) return 1.0;
+	b = sqrt(b);
+	float npow = pow(n, 2);
+	return 0.5 * (pow((cost - b) / (cost + b), 2) + pow((npow * b - cost) / (npow * b + cost), 2));
 }
 
 // 4: GGX distribution term D, 5: GGX geometry term G
